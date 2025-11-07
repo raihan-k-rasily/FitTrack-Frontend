@@ -1,0 +1,103 @@
+/* ensure the css file is imported in Authentification.jsx: import "./Authentification.css"; */
+
+/* container & background */
+.auth-container {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* video */
+.auth-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+
+/* overlay dimmer */
+.auth-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0,0,0,0.55);
+  z-index: -1;
+}
+
+/* center wrapper */
+.auth-card-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Target MUI Paper root with your class for max specificity */
+.auth-card,
+.auth-card.MuiPaper-root,
+.auth-card.MuiCard-root {
+  width: 420px;
+  border-radius: 12px;
+  /* translucent background + blur (glass) */
+  background: rgba(255,255,255,0.06) !important;    /* visible transparency */
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  color: #fff;
+  padding: 22px;
+  overflow: visible;
+}
+
+/* If CardContent has its own background, make it transparent too */
+.auth-card .MuiCardContent-root {
+  background: transparent !important;
+  padding: 16px !important;
+}
+
+/* Title */
+.auth-title { color: #ffffff; font-weight: 700; margin-bottom: 10px; }
+
+/* Fields */
+.auth-field { display: flex; flex-direction: column; margin-bottom: 16px; }
+.auth-field label { color: rgba(255,255,255,0.85); margin-bottom: 6px; font-size: 0.95rem; }
+
+/* Input style with clear border and focus glow */
+.auth-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.6);
+  color: #fff;
+  outline: none;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.12s;
+}
+
+.auth-field input::placeholder { color: rgba(255,255,255,0.5); }
+
+.auth-field input:focus {
+  border-color: #00e676;
+  box-shadow: 0 0 10px rgba(0,230,118,0.12);
+  transform: translateY(-1px);
+}
+
+/* Button */
+.auth-btn {
+  margin-top: 10px;
+  padding: 12px;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg,#00bfa5,#1de9b6) !important;
+  color: #000 !important;
+  border-radius: 10px !important;
+}
+
+/* links */
+.auth-link { margin-top: 12px; color: rgba(255,255,255,0.85); }
+.auth-anchor { color: #00e676; text-decoration: underline; font-weight: 700; }
