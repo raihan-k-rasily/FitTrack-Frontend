@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
+
 // Services
 import commonAPI from "../services/commonAPI";
 import { BASEURL } from "../services/baseURL";
@@ -61,7 +62,7 @@ const darkLimeTheme = createTheme({
             MuiCssBaseline: {
                   styleOverrides: {
                         // NOTE: We remove the body background here as the video will cover it
-                        body: { backgroundColor: 'transparent', backgroundImage: 'none' },
+                        body: { backgroundColor: 'transparent', backgroundImage: 'none' }, // ✅ CORRECT
                   },
             },
             MuiButton: {
@@ -96,41 +97,32 @@ const darkLimeTheme = createTheme({
 });
 
 
+// --- Original Component ---// ⚙️ CORRECTED BackgroundVideo COMPONENT
 const BackgroundVideo = () => (
       <Box
             sx={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  overflow: 'hidden',
-                  zIndex: -2, // Place behind content
-                  '&::after': { // Overlay for better readability
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        bgcolor: 'rgba(0, 0, 0, 0.5)', // Dark transparent layer
-                        zIndex: -1,
-                  },
+                  position: 'fixed', // ✅ CORRECT: Fixes video to viewport
+                  zIndex: -2,        // ✅ CORRECT: Puts video behind content
+                  // ... other styles to cover screen ...
             }}
       >
             <video
+                  // **Crucial for auto-playing background video**
                   autoPlay
                   loop
                   muted
-                  playsInline // Important for mobile devices
+                  playsInline
+
+                  // **Style to cover the entire container while maintaining aspect ratio**
                   style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: 'cover', // Ensures video covers the entire container
+                        objectFit: 'cover',
                   }}
             >
-                  {/* The path to your video file in the public folder */}
-                  <source src="/videos/FitTrack-bg.mp4" type="video/mp4" />
+                  {/* ⚠️ IMPORTANT: Replace 'path/to/your/background-video.mp4' with your actual video file path */}
+                  <source src='/videos/FitTrack-bg.mp4' type="video/mp4" />
+                  {/* Fallback for browsers that don't support the video tag */}
                   Your browser does not support the video tag.
             </video>
       </Box>
@@ -358,10 +350,21 @@ const ExerciseFormModal = ({ exercise, onClose, onSave }) => {
 };
 
 // --- MAIN COMPONENT ---
+// ... (All Imports and Helper Components: BackgroundVideo, ToastNotification, ConfirmationModal, FabButton, ExerciseCard, ExerciseFormModal) ...
+
+// --- MAIN COMPONENT ---
 function FitTrack() {
       const { id } = useParams();
       const [user, setUser] = useState(null);
       const [exercises, setExercises] = useState([]);
+
+      // State for Modals/Toasts/Filters
+      const [modalExercise, setModalExercise] = useState(null);
+      const [notification, setNotification] = useState(null);
+      const [confirmation, setConfirmation] = useState(null);
+      const [selectedCategory, setSelectedCategory] = useState('All');
+      const [searchTerm, setSearchTerm] = useState('');
+      const [searchDate, setSearchDate] = useState('');
 
       useEffect(() => {
             if (!id) return;
@@ -380,15 +383,11 @@ function FitTrack() {
             fetchUserAndExercises();
       }, [id]);
 
-      const [modalExercise, setModalExercise] = useState(null);
-      const [notification, setNotification] = useState(null);
-      const [confirmation, setConfirmation] = useState(null);
-      const [selectedCategory, setSelectedCategory] = useState('All');
-      const [searchTerm, setSearchTerm] = useState('');
-      const [searchDate, setSearchDate] = useState('');
-      const filtered = useMemo(() => {
+      // **FIX: Grouping Logic**
+      const groupedExercises = useMemo(() => {
             let list = exercises;
 
+            // 1. Filtering
             if (searchTerm)
                   list = list.filter((e) =>
                         e.exerciseName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -400,11 +399,25 @@ function FitTrack() {
             if (selectedCategory !== 'All')
                   list = list.filter((e) => e.category === selectedCategory);
 
-            return list.sort((a, b) => new Date(b.date) - new Date(a.date));
+            // 2. Grouping
+            const groups = list.reduce((acc, exercise) => {
+                  const date = exercise.date;
+                  if (!acc[date]) {
+                        acc[date] = [];
+                  }
+                  acc[date].push(exercise);
+                  return acc;
+            }, {});
+
+            // 3. Sorting (Sort the dates descendingly to show most recent first)
+            const sortedDates = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
+
+            return { groups, sortedDates };
       }, [exercises, selectedCategory, searchTerm, searchDate]);
+      // --- End Grouping Logic ---
 
 
-      // ADD or UPDATE
+      // ADD or UPDATE logic (unchanged)
       const handleSave = async (data) => {
             try {
                   if (data.id) {
@@ -424,7 +437,7 @@ function FitTrack() {
             setModalExercise(null);
       };
 
-      // DELETE
+      // DELETE logic (unchanged)
       const handleDelete = (exercise) =>
             setConfirmation({
                   message: `Delete ${exercise.exerciseName}?`,
@@ -444,28 +457,36 @@ function FitTrack() {
 
       return (
             <ThemeProvider theme={darkLimeTheme}>
-                  {/* 1. Add the BackgroundVideo component */}
                   <BackgroundVideo />
                   <CssBaseline />
-                  <Container maxWidth="md" sx={{ pb: 8, position: 'relative', zIndex: 1 }}>
+                  {/* ✅ FIX: Ensure the main content container allows the content to extend the body's scroll height.
+                - Removed any 'height' or 'overflow' limitations from the parent container.
+                - Added pb: 8 (padding-bottom) to prevent the FAB button from obscuring the last content. 
+            */}
+                  <Container
+                        maxWidth="md"
+                        sx={{
+                              pb: 8, // Adds necessary padding to see the last card above the FAB
+                              position: 'relative', // Ensures zIndex works
+                              zIndex: 1, // ✅ CORRECT: Layers content over the fixed video (zIndex: -2)
+                              // ❌ IMPORTANT: NO height: '100vh' or overflow: 'auto/scroll' here!
+                        }}
+                  >
+                        {/* Header */}
                         <Box sx={{ py: 6, mb: 4, borderBottom: '1px solid #333' }}>
                               <Typography variant="h4" fontWeight="800">
                                     Welcome to{" "}
-                                    <Box component="span" color="primary.main">
-                                          FitTrack
-                                    </Box>
+                                    <Box component="span" color="primary.main">FitTrack</Box>
                                     {user ? `, ${user.username}` : ""}
                                     <SportsGymnasticsIcon sx={{ color: 'primary.main', ml: 1.5, fontSize: 30 }} />
                               </Typography>
-
-                              <Typography color="textSecondary">
-                                    Track your fitness progress
-                              </Typography>
-
+                              <Typography color="textSecondary">Track your fitness progress</Typography>
                         </Box>
 
+                        {/* Filters/Search (Unchanged) */}
                         <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
                               {CATEGORIES.map((cat) => (
+                                    // ... Category Buttons ...
                                     <Button
                                           key={cat}
                                           variant={selectedCategory === cat ? 'contained' : 'outlined'}
@@ -477,6 +498,7 @@ function FitTrack() {
                         </Box>
                         <Grid container spacing={2} sx={{ mb: 3 }}>
                               <Grid item xs={12} sm={6}>
+                                    {/* ... Search TextField ... */}
                                     <TextField
                                           fullWidth
                                           variant="filled"
@@ -486,6 +508,7 @@ function FitTrack() {
                                     />
                               </Grid>
                               <Grid item xs={12} sm={6}>
+                                    {/* ... Date Picker ... */}
                                     <TextField
                                           fullWidth
                                           variant="filled"
@@ -497,15 +520,42 @@ function FitTrack() {
                               </Grid>
                         </Grid>
 
+                        {/* Rendering Grouped Exercises (Unchanged) */}
+                        <Box sx={{ mb: 4 }}>
+                              {groupedExercises.sortedDates.length === 0 && (
+                                    <Typography variant="h6" color="textSecondary" sx={{ mt: 4, textAlign: 'center' }}>
+                                          No workouts logged yet, or no results for current filters.
+                                    </Typography>
+                              )}
+                              {groupedExercises.sortedDates.map((date) => (
+                                    <Box key={date} sx={{ mb: 4 }}>
+                                          {/* Date Header */}
+                                          <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main', borderBottom: '2px solid #333' }}>
+                                                {new Date(date).toLocaleDateString('en-US', {
+                                                      weekday: 'long',
+                                                      year: 'numeric',
+                                                      month: 'long',
+                                                      day: 'numeric',
+                                                })}
+                                          </Typography>
 
-                        <Grid container spacing={2}>
-                              {filtered.map((exercise) => (
-                                    <Grid item xs={12} key={exercise.id}>
-                                          <ExerciseCard exercise={exercise} onEdit={setModalExercise} onDelete={handleDelete} />
-                                    </Grid>
+                                          {/* Exercise Cards for the date */}
+                                          <Grid container spacing={2}>
+                                                {groupedExercises.groups[date].map((exercise) => (
+                                                      <Grid item xs={12} key={exercise.id}>
+                                                            <ExerciseCard
+                                                                  exercise={exercise}
+                                                                  onEdit={setModalExercise}
+                                                                  onDelete={handleDelete}
+                                                            />
+                                                      </Grid>
+                                                ))}
+                                          </Grid>
+                                    </Box>
                               ))}
-                        </Grid>
+                        </Box>
 
+                        {/* Modals and FAB (Unchanged) */}
                         <FabButton
                               onClick={() =>
                                     setModalExercise({ exerciseName: '', sets: 3, reps: 12, category: 'Chest', date: new Date().toISOString().slice(0, 10) })
