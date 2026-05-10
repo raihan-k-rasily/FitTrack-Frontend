@@ -42,17 +42,31 @@
 .auth-card,
 .auth-card.MuiPaper-root,
 .auth-card.MuiCard-root {
-  width: 420px;
-  border-radius: 12px;
+  width: 90%;
+  max-width: 420px;
+  border-radius: 20px;
   /* translucent background + blur (glass) */
-  background: rgba(255,255,255,0.06) !important;    /* visible transparency */
-  -webkit-backdrop-filter: blur(12px) !important;
-  backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255,255,255,0.16) !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  background: rgba(20, 20, 20, 0.4) !important;    /* darker glass for better contrast */
+  -webkit-backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
   color: #fff;
-  padding: 22px;
+  padding: 30px;
   overflow: visible;
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 480px) {
+  .auth-card,
+  .auth-card.MuiPaper-root,
+  .auth-card.MuiCard-root {
+    padding: 20px;
+    width: 95%;
+  }
+  .auth-title {
+    font-size: 1.8rem !important;
+  }
 }
 
 /* If CardContent has its own background, make it transparent too */

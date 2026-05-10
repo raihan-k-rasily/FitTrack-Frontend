@@ -56,22 +56,60 @@ const darkLimeTheme = createTheme({
       },
       typography: {
             fontFamily: ['Inter', 'Roboto', 'Arial', 'sans-serif'].join(','),
-            h4: { fontWeight: 800 },
+            h4: { 
+                  fontWeight: 800,
+                  '@media (max-width:600px)': {
+                        fontSize: '1.75rem',
+                  },
+            },
+            h5: {
+                  fontWeight: 700,
+                  '@media (max-width:600px)': {
+                        fontSize: '1.25rem',
+                  },
+            }
       },
       components: {
             MuiCssBaseline: {
                   styleOverrides: {
-                        // NOTE: We remove the body background here as the video will cover it
-                        body: { backgroundColor: 'transparent', backgroundImage: 'none' }, // ✅ CORRECT
+                        body: { 
+                              backgroundColor: '#121212', 
+                              backgroundImage: 'none',
+                              scrollbarWidth: 'thin',
+                              '&::-webkit-scrollbar': {
+                                    width: '8px',
+                              },
+                              '&::-webkit-scrollbar-track': {
+                                    background: '#1e1e1e',
+                              },
+                              '&::-webkit-scrollbar-thumb': {
+                                    background: '#333',
+                                    borderRadius: '10px',
+                              },
+                              '&::-webkit-scrollbar-thumb:hover': {
+                                    background: '#444',
+                              },
+                        },
                   },
             },
             MuiButton: {
                   styleOverrides: {
-                        root: { borderRadius: '25px', textTransform: 'none' },
-                        containedPrimary: { boxShadow: '0 4px 15px rgba(204, 255, 0, 0.3)' },
+                        root: { borderRadius: '25px', textTransform: 'none', fontWeight: 600 },
+                        containedPrimary: { boxShadow: '0 4px 15px rgba(204, 255, 0, 0.2)' },
                   },
             },
-            MuiCard: { styleOverrides: { root: { borderRadius: '16px', backdropFilter: 'blur(5px)' } } },
+            MuiCard: { 
+                  styleOverrides: { 
+                        root: { 
+                              borderRadius: '20px', 
+                              backdropFilter: 'blur(10px)',
+                              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                              '&:hover': {
+                                    transform: 'translateY(-5px)',
+                              }
+                        } 
+                  } 
+            },
             MuiFab: {
                   styleOverrides: {
                         root: {
@@ -81,7 +119,19 @@ const darkLimeTheme = createTheme({
                         },
                   },
             },
-            MuiTextField: { defaultProps: { variant: 'filled' } },
+            MuiTextField: { 
+                  defaultProps: { variant: 'filled' },
+                  styleOverrides: {
+                        root: {
+                              '& .MuiFilledInput-root': {
+                                    borderRadius: '12px',
+                                    backgroundColor: 'rgba(255,255,255,0.05)',
+                                    '&:before, &:after': { display: 'none' },
+                                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' },
+                              }
+                        }
+                  }
+            },
             MuiInputLabel: {
                   styleOverrides: {
                         root: { '&.Mui-focused': { color: '#ccff00' } },
@@ -89,8 +139,7 @@ const darkLimeTheme = createTheme({
             },
             MuiPaper: {
                   styleOverrides: {
-                        // Add subtle background to Dialogs/Modals to improve readability over video
-                        root: { backgroundColor: 'rgba(30, 30, 30, 0.95)' }
+                        root: { backgroundColor: 'rgba(30, 30, 30, 0.95)', backgroundImage: 'none' }
                   }
             }
       },
@@ -101,28 +150,36 @@ const darkLimeTheme = createTheme({
 const BackgroundVideo = () => (
       <Box
             sx={{
-                  position: 'fixed', // ✅ CORRECT: Fixes video to viewport
-                  zIndex: -2,        // ✅ CORRECT: Puts video behind content
-                  // ... other styles to cover screen ...
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  width: '100vw',
+                  height: '100vh',
+                  zIndex: -2,
+                  overflow: 'hidden',
+                  pointerEvents: 'none',
             }}
       >
+            <Box
+                  sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundColor: 'rgba(0,0,0,0.65)', // Dimmer overlay
+                        zIndex: -1,
+                  }}
+            />
             <video
-                  // **Crucial for auto-playing background video**
                   autoPlay
                   loop
                   muted
                   playsInline
-
-                  // **Style to cover the entire container while maintaining aspect ratio**
                   style={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
                   }}
             >
-                  {/* ⚠️ IMPORTANT: Replace 'path/to/your/background-video.mp4' with your actual video file path */}
                   <source src='/videos/FitTrack-bg.mp4' type="video/mp4" />
-                  {/* Fallback for browsers that don't support the video tag */}
                   Your browser does not support the video tag.
             </video>
       </Box>
@@ -473,24 +530,24 @@ function FitTrack() {
                         }}
                   >
                         {/* Header */}
-                        <Box sx={{ py: 6, mb: 4, borderBottom: '1px solid #333' }}>
+                        <Box sx={{ py: { xs: 4, md: 6 }, mb: 4, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                               <Typography variant="h4" fontWeight="800">
                                     Welcome to{" "}
                                     <Box component="span" color="primary.main">FitTrack</Box>
                                     {user ? `, ${user.username}` : ""}
-                                    <SportsGymnasticsIcon sx={{ color: 'primary.main', ml: 1.5, fontSize: 30 }} />
+                                    <SportsGymnasticsIcon sx={{ color: 'primary.main', ml: 1.5, fontSize: { xs: 24, md: 30 }, verticalAlign: 'middle' }} />
                               </Typography>
-                              <Typography color="textSecondary">Track your fitness progress</Typography>
+                              <Typography color="textSecondary" sx={{ mt: 1 }}>Track your fitness progress with style</Typography>
                         </Box>
 
-                        {/* Filters/Search (Unchanged) */}
-                        <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+                        {/* Filters/Search */}
+                        <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
                               {CATEGORIES.map((cat) => (
-                                    // ... Category Buttons ...
                                     <Button
                                           key={cat}
                                           variant={selectedCategory === cat ? 'contained' : 'outlined'}
                                           onClick={() => setSelectedCategory(cat)}
+                                          sx={{ px: 3 }}
                                     >
                                           {cat}
                                     </Button>
